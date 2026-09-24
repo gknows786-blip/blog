@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Sign up</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="signup">
+	<nav>
+		<strong>Simple users</strong>
+		<div><a href="signin.html">Sign in</a><a href="dashboard.html">Dashboard</a></div>
+	</nav>
+	<main>
+		<p class="intro">Beginner user practice</p>
+		<h1>Create an account</h1>
+		<p class="intro">Your account is saved in this browser using localStorage.</p>
+		<section class="panel">
+			<form data-signup-form>
+				<label>Name <input name="name" required autocomplete="name"></label>
+				<label>Email <input name="email" type="email" required autocomplete="email"></label>
+				<label>Password <input name="password" type="password" required minlength="4" autocomplete="new-password"></label>
+				<button type="submit">Sign up</button>
+			</form>
+			<p class="message" data-message aria-live="polite"></p>
+		</section>
+	</main>
+	<script>
+		const storageKey = "simple-users";
+		let users = JSON.parse(localStorage.getItem(storageKey)) || [];
+		const form = document.querySelector("[data-signup-form]");
+		const message = document.querySelector("[data-message]");
+
+		form.addEventListener("submit", function (event) {
+			event.preventDefault();
+
+			const name = form.elements.name.value.trim();
+			const email = form.elements.email.value.trim().toLowerCase();
+			const password = form.elements.password.value;
+			let emailAlreadyExists = false;
+
+			for (let i = 0; i < users.length; i++) {
+				if (users[i].email === email) {
+					emailAlreadyExists = true;
+				}
+			}
+
+			if (emailAlreadyExists) {
+				message.textContent = "That email is already registered on this page.";
+				message.className = "message error";
+				return;
+			}
+
+			const newUser = {
+				name: name,
+				email: email,
+				password: password
+			};
+
+			users.push(newUser);
+			localStorage.setItem(storageKey, JSON.stringify(users));
+			form.reset();
+			message.textContent = "Account saved successfully.";
+			message.className = "message";
+			showLoading(form.querySelector("button"));
+			window.location.href = "signin.html";
+		});
+
+		function showLoading(button) {
+			button.textContent = "Loading...";
+			button.disabled = true;
+		}
+	</script>
+</body>
+</html>

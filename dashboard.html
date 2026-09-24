@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>User dashboard</title>
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="dashboard">
+	<nav>
+		<strong>Simple users</strong>
+		<div><a href="signup.html">Sign up</a><button type="button" onclick="logout()">Log out</button></div>
+	</nav>
+	<main class="dashboard">
+		<p class="intro">Saved user dashboard</p>
+		<h1>Hello, <span data-user-name></span>.</h1>
+		<p class="intro">Email: <span data-user-email></span></p>
+		<section class="panel">
+			<h2>Write a post</h2>
+			<form onsubmit="addPost(event)">
+				<label>Title <input name="title" required></label>
+				<label>Post <textarea name="content" required></textarea></label>
+				<button type="submit">Post</button>
+			</form>
+			<p class="message" data-post-message aria-live="polite"></p>
+		</section>
+		<section class="panel">
+			<h2>Posts: <span data-post-count>0</span></h2>
+			<ul data-post-list></ul>
+		</section>
+	</main>
+	<script>
+		const postStorageKey = "simple-posts";
+		const currentUser = JSON.parse(localStorage.getItem("current-user")) || { name: "Guest", email: "" };
+		if (!localStorage.getItem("current-user")) {
+			window.location.href = "signin.html";
+		}
+		let posts = JSON.parse(localStorage.getItem(postStorageKey)) || [];
+		const userName = document.querySelector("[data-user-name]");
+		const userEmail = document.querySelector("[data-user-email]");
+		const postList = document.querySelector("[data-post-list]");
+		const postCount = document.querySelector("[data-post-count]");
+
+		function showPosts() {
+			const userPosts = posts.filter(function (post) {
+				return post.email === currentUser.email;
+			});
+
+			postCount.textContent = userPosts.length;
+			postList.innerHTML = "";
+
+			if (userPosts.length === 0) {
+				postList.innerHTML = '<li class="empty">No posts yet.</li>';
+				return;
+			}
+
+			for (let i = 0; i < userPosts.length; i++) {
+				const post = userPosts[i];
+				const item = document.createElement("li");
+				const title = document.createElement("strong");
+				const content = document.createElement("p");
+				const editButton = document.createElement("button");
+				const deleteButton = document.createElement("button");
+
+				title.textContent = post.title;
+				content.textContent = post.content;
+				editButton.textContent = "Edit";
+				deleteButton.textContent = "Delete";
+				editButton.type = "button";
+				deleteButton.type = "button";
+				item.append(title, content, editButton, deleteButton);
+				postList.appendChild(item);
+			}
+		}
+
+		function addPost(event) {
+			event.preventDefault();
+			const form = event.target;
+			const newPost = {
+				title: form.elements.title.value.trim(),
+				content: form.elements.content.value.trim(),
+				email: currentUser.email
+			};
+
+			posts.push(newPost);
+			localStorage.setItem(postStorageKey, JSON.stringify(posts));
+			form.reset();
+			showPosts();
+			document.querySelector("[data-post-message]").textContent = "Post saved.";
+		}
+
+		function logout() {
+			localStorage.removeItem("current-user");
+			window.location.href = "signin.html";
+		}
+
+		userName.textContent = currentUser.name;
+		userEmail.textContent = currentUser.email;
+		showPosts();
+
+		function showLoading(button) {
+			button.textContent = "Loading...";
+			button.disabled = true;
+		}
+	</script>
+</body>
+</html>
